@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const AUTH_COOKIE = 'mehor_admin_session';
+const PUBLIC_FILE = /\.[^/]+$/;
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow Next.js internals and common static files
+  // Allow Next.js internals and public static files.
   if (
     pathname.startsWith('/_next') ||
+    PUBLIC_FILE.test(pathname) ||
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml'
