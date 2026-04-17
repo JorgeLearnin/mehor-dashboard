@@ -1,0 +1,14 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  shape-rendering="geometricPrecision"
+>
+  <rect width="64" height="64" rx="14" fill="#070A12" />
+
+  <path
+    d="M14 50V14H24L32 30L40 14H50V50H42V28L37 40H27L22 28V50Z"
+    fill="#ffffff"
+  />
+</svg>
