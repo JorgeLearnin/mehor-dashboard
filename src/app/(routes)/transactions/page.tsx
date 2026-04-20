@@ -12,6 +12,7 @@ import {
   formatDashboardActor,
   getDashboardOrderDisplay,
 } from '../../../lib/dashboard-formatters';
+import { getDashboardApiBaseUrl } from '../../../lib/api-base';
 import { usePagination } from '../../../lib/use-pagination';
 
 function Card({
@@ -118,10 +119,7 @@ function Transactions({ search }: { search: string }) {
     pageSize: 10,
   });
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:5000';
+  const baseUrl = getDashboardApiBaseUrl();
 
   const openTransaction = React.useCallback((t: DashboardTransaction) => {
     setSelected(t);

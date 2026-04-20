@@ -7,6 +7,7 @@ import {
   getOptimizedAttachmentUrl,
   uploadFileToSignedCloudinaryUrl,
 } from '@/lib/cloudinary';
+import { getDashboardApiBaseUrl } from '@/lib/api-base';
 import { formatDashboardActor } from '@/lib/dashboard-formatters';
 
 import { ConfirmationModal } from './confirmation-modal';
@@ -223,10 +224,7 @@ export function DisputeResolutionModal({
   const [sendingReply, setSendingReply] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:5000';
+  const baseUrl = getDashboardApiBaseUrl();
 
   const disputeStage = React.useMemo(() => {
     const raw = String(

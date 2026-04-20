@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+import { getDashboardApiBaseUrl } from '@/lib/api-base';
 
 function Card({
   children,
@@ -83,11 +84,50 @@ export default function Page() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [rememberMe, setRememberMe] = React.useState(true);
+  const [checkingSession, setCheckingSession] = React.useState(true);
   const [submitting, setSubmitting] = React.useState(false);
   const [errors, setErrors] = React.useState<{
     email?: string;
     password?: string;
   }>({});
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const verifySession = async () => {
+      try {
+        const baseUrl = getDashboardApiBaseUrl();
+        const resp = await fetch(`${baseUrl}/api/dashboard-auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (cancelled) return;
+
+        if (resp.ok) {
+          router.replace('/overview');
+          return;
+        }
+
+        if (resp.status === 401 || resp.status === 403) {
+          await fetch(`${baseUrl}/api/dashboard-auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+          }).catch(() => undefined);
+        }
+      } catch {
+        // Ignore transient verification failures and allow manual sign-in.
+      } finally {
+        if (!cancelled) setCheckingSession(false);
+      }
+    };
+
+    void verifySession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   const setEmailSafe = React.useCallback((v: string) => {
     setEmail(v);
@@ -140,12 +180,13 @@ export default function Page() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (checkingSession) return;
+
     if (!validate()) return;
 
     setSubmitting(true);
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const baseUrl = getDashboardApiBaseUrl();
 
       const resp = await fetch(`${baseUrl}/api/dashboard-auth/login`, {
         method: 'POST',
@@ -194,6 +235,12 @@ export default function Page() {
             </div>
           </div>
 
+          {checkingSession ? (
+            <div className="mt-6 rounded-3xl border border-black/10 bg-black/5 p-4 text-sm text-black/60">
+              Checking your session…
+            </div>
+          ) : null}
+
           <form onSubmit={onSubmit} className="mt-6 grid gap-4">
             <TextInput
               label="Email"
@@ -225,7 +272,7 @@ export default function Page() {
             </label>
 
             <div className="mt-2 grid gap-2">
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting || checkingSession}>
                 {submitting ? 'Signing in…' : 'Sign in'}
               </Button>
             </div>

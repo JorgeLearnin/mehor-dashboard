@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { PaginationControls } from '../../../components/pagination-controls';
 import { ConfirmationModal } from '../../../components/modals/confirmation-modal';
+import { getDashboardApiBaseUrl } from '../../../lib/api-base';
 import { usePagination } from '../../../lib/use-pagination';
 
 function Card({
@@ -177,8 +178,7 @@ function Listings({ search }: { search: string }) {
     return value.startsWith('@') ? value : `@${value}`;
   }, []);
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  const baseUrl = getDashboardApiBaseUrl();
 
   React.useEffect(() => {
     const ac = new AbortController();

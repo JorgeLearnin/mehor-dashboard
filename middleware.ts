@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const AUTH_COOKIE = 'mehor_admin_session';
+const AUTH_COOKIE = process.env.DASHBOARD_COOKIE_NAME || 'mehor_admin_session';
 const PUBLIC_FILE = /\.[^/]+$/;
 
 export function middleware(req: NextRequest) {
@@ -21,9 +21,6 @@ export function middleware(req: NextRequest) {
 
   // Public route: sign-in
   if (pathname === '/sign-in') {
-    if (hasSession) {
-      return NextResponse.redirect(new URL('/overview', req.url));
-    }
     return NextResponse.next();
   }
 

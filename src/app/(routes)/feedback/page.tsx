@@ -9,6 +9,7 @@ import {
   FeedbackDetailsModal,
   type DashboardFeedback,
 } from '../../../components/modals/feedback-details-modal';
+import { getDashboardApiBaseUrl } from '../../../lib/api-base';
 import { formatDashboardShortDate } from '../../../lib/dashboard-formatters';
 import { usePagination } from '../../../lib/use-pagination';
 
@@ -108,10 +109,7 @@ function Feedback({ search }: { search: string }) {
     pageSize: 10,
   });
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:5000';
+  const baseUrl = getDashboardApiBaseUrl();
 
   React.useEffect(() => {
     const ac = new AbortController();

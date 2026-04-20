@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { getDashboardApiBaseUrl } from '@/lib/api-base';
 import {
   LayoutDashboard,
   Users,
@@ -98,7 +99,51 @@ function RoutesShell({ children }: Readonly<{ children: React.ReactNode }>) {
 
   const urlQuery = searchParams.get('q') ?? '';
   const [search, setSearch] = React.useState(urlQuery);
+  const [checkingSession, setCheckingSession] = React.useState(true);
   const [loggingOut, setLoggingOut] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const verifySession = async () => {
+      try {
+        const baseUrl = getDashboardApiBaseUrl();
+        const resp = await fetch(`${baseUrl}/api/dashboard-auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (cancelled) return;
+
+        if (resp.ok) {
+          setCheckingSession(false);
+          return;
+        }
+
+        if (resp.status === 401 || resp.status === 403) {
+          await fetch(`${baseUrl}/api/dashboard-auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+          }).catch(() => undefined);
+
+          if (!cancelled) {
+            window.location.assign('/sign-in');
+          }
+          return;
+        }
+      } catch {
+        // Allow the shell to render if verification fails for non-auth reasons.
+      }
+
+      if (!cancelled) setCheckingSession(false);
+    };
+
+    void verifySession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   React.useEffect(() => {
     setSearch(urlQuery);
@@ -133,10 +178,7 @@ function RoutesShell({ children }: Readonly<{ children: React.ReactNode }>) {
 
   const logout = React.useCallback(async () => {
     if (loggingOut) return;
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_URL ||
-      process.env.NEXT_PUBLIC_BACKEND_URL ||
-      'http://localhost:5000';
+    const baseUrl = getDashboardApiBaseUrl();
 
     setLoggingOut(true);
     try {
@@ -151,6 +193,10 @@ function RoutesShell({ children }: Readonly<{ children: React.ReactNode }>) {
     // Full navigation so middleware immediately sees updated cookies.
     window.location.assign('/sign-in');
   }, [loggingOut]);
+
+  if (checkingSession) {
+    return <div className="min-h-screen bg-white text-black" />;
+  }
 
   return (
     <div className="min-h-screen bg-white text-black">
